@@ -3,6 +3,8 @@
     package="com.example.smsverify">
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+    <uses-permission android:name="android.permission.READ_SMS" />
 
     <application
         android:allowBackup="true"
@@ -12,11 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SmsVerify">
         <activity
-            android:name=".ScanQrcode"
-            android:exported="true" />
-        <activity
-            android:name=".scan_qr"
-            android:exported="true" />
+            android:name=".ScanQrcodeActivity"
+            android:exported="true"
+            android:parentActivityName=".MainActivity"/>
         <activity
             android:name=".MainActivity"
             android:exported="true">

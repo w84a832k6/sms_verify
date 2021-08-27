@@ -16,7 +16,7 @@ import kotlinx.android.synthetic.main.activity_scan_qrcode.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
-private const val CAMERA_REQUERST_CODE = 101
+private const val CAMERA_REQUEST_CODE = 101
 
 class ScanQrcodeActivity : AppCompatActivity() {
 
@@ -91,7 +91,7 @@ class ScanQrcodeActivity : AppCompatActivity() {
     private fun makeRequest() {
         ActivityCompat.requestPermissions(this,
         arrayOf(android.Manifest.permission.CAMERA),
-        CAMERA_REQUERST_CODE)
+            CAMERA_REQUEST_CODE)
     }
 
     override fun onRequestPermissionsResult(
@@ -101,7 +101,7 @@ class ScanQrcodeActivity : AppCompatActivity() {
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            CAMERA_REQUERST_CODE -> {
+            CAMERA_REQUEST_CODE -> {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "You need the camera permission to be able to use this app!", Toast.LENGTH_SHORT).show()
                 }
