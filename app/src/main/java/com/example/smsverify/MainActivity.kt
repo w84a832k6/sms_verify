@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.scanQrButton -> {
-                val intent = Intent(this, ScanQrcode::class.java)
+                val intent = Intent(this, ScanQrcodeActivity::class.java)
                 this.startActivity(intent)
                 return true
             }

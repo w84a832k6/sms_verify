@@ -13,10 +13,12 @@ import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
 import kotlinx.android.synthetic.main.activity_scan_qrcode.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 private const val CAMERA_REQUERST_CODE = 101
 
-class ScanQrcode : AppCompatActivity() {
+class ScanQrcodeActivity : AppCompatActivity() {
 
     private lateinit var codeScanner: CodeScanner
 
@@ -26,6 +28,11 @@ class ScanQrcode : AppCompatActivity() {
 
         setupPermission()
         codeScanner()
+
+        GlobalScope.launch {
+            val settingString = DataStoreManager.getStringVale(this@ScanQrcodeActivity, "testKey", default = "scanning something...")
+            tv_textView.text = settingString
+        }
     }
 
     private fun codeScanner() {
@@ -43,6 +50,9 @@ class ScanQrcode : AppCompatActivity() {
             decodeCallback = DecodeCallback {
                 runOnUiThread{
                     tv_textView.text = it.text
+                }
+                GlobalScope.launch {
+                    DataStoreManager.setValue(this@ScanQrcodeActivity, "testKey", it.text)
                 }
             }
 

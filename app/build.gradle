@@ -44,4 +44,11 @@ dependencies {
 
     //Code scanner
     implementation 'com.budiyev.android:code-scanner:2.1.0'
+
+    //data store
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+
+    //coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.1'
 }
