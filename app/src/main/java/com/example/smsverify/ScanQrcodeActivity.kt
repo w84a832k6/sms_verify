@@ -30,7 +30,11 @@ class ScanQrcodeActivity : AppCompatActivity() {
         codeScanner()
 
         GlobalScope.launch {
-            val settingString = DataStoreManager.getStringVale(this@ScanQrcodeActivity, "testKey", default = "scanning something...")
+            val settingString = DataStoreManager.getStringVale(
+                this@ScanQrcodeActivity,
+                "testKey",
+                default = "scanning something..."
+            )
             tv_textView.text = settingString
         }
     }
@@ -48,7 +52,7 @@ class ScanQrcodeActivity : AppCompatActivity() {
             isFlashEnabled = false
 
             decodeCallback = DecodeCallback {
-                runOnUiThread{
+                runOnUiThread {
                     tv_textView.text = it.text
                 }
                 GlobalScope.launch {
@@ -57,7 +61,7 @@ class ScanQrcodeActivity : AppCompatActivity() {
             }
 
             errorCallback = ErrorCallback {
-                runOnUiThread{
+                runOnUiThread {
                     Log.e("Main", "Camera initialization error: ${it.message}")
                 }
             }
@@ -79,19 +83,22 @@ class ScanQrcodeActivity : AppCompatActivity() {
     }
 
     private fun setupPermission() {
-        val permission = ContextCompat.checkSelfPermission(this,
-        android.Manifest.permission.CAMERA)
+        val permission = ContextCompat.checkSelfPermission(
+            this,
+            android.Manifest.permission.CAMERA
+        )
 
-        if (permission != PackageManager.PERMISSION_GRANTED)
-        {
+        if (permission != PackageManager.PERMISSION_GRANTED) {
             makeRequest()
         }
     }
 
     private fun makeRequest() {
-        ActivityCompat.requestPermissions(this,
-        arrayOf(android.Manifest.permission.CAMERA),
-            CAMERA_REQUEST_CODE)
+        ActivityCompat.requestPermissions(
+            this,
+            arrayOf(android.Manifest.permission.CAMERA),
+            CAMERA_REQUEST_CODE
+        )
     }
 
     override fun onRequestPermissionsResult(
@@ -103,7 +110,11 @@ class ScanQrcodeActivity : AppCompatActivity() {
         when (requestCode) {
             CAMERA_REQUEST_CODE -> {
                 if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(this, "You need the camera permission to be able to use this app!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this,
+                        "You need the camera permission to be able to use this app!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
