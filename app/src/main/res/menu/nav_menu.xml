@@ -5,5 +5,8 @@
     <item android:id="@+id/scanQrButton"
         android:title="scanQrCode"
         app:showAsAction="never"/>
+    <item android:id="@+id/messageList"
+        android:title="messageList"
+        app:showAsAction="never"/>
 
 </menu>

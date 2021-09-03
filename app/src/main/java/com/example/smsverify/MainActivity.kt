@@ -32,6 +32,11 @@ class MainActivity : AppCompatActivity() {
                 this.startActivity(intent)
                 return true
             }
+            R.id.messageList -> {
+                val intent = Intent(this, MessageListActivity::class.java)
+                this.startActivity(intent)
+                return true
+            }
         }
 
         return super.onOptionsItemSelected(item)
