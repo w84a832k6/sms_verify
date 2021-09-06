@@ -21,15 +21,13 @@ class SMSReceiver : BroadcastReceiver() {
 
             Toast.makeText(context, "from:$fromNumber\nbody : $body", Toast.LENGTH_SHORT).show()
 
+            //存入sqlite 送出request
             GlobalScope.launch {
                 val messageDao = MessageDatabase.getDatabase(context, this).messageDao()
                 messageDao.insertAll(Message(fromNumber.toString(), body))
             }
-            //存入sqlite 送出request
-//            val messageDao = MessageDatabase.getDatabase(context, GlobalScope).messageDao()
-//            GlobalScope.launch {
-//                messageDao.insertAll(Message(from = fromNumber.toString(), context = body))
-//            }
+
+
         }
     }
 }

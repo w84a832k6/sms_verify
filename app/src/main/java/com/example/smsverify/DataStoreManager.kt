@@ -46,7 +46,7 @@ object DataStoreManager {
         }
     }
 
-    suspend fun getStringVale(context: Context, key: String, default: String = "") : String {
+    suspend fun getStringValue(context: Context, key: String, default: String = "") : String {
         val wrappedKey = stringPreferencesKey(key)
         val valueFlow: Flow<String> = context.settingsDataStore.data.map {
             it[wrappedKey] ?: default

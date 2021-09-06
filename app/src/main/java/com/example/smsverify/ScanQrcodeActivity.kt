@@ -13,8 +13,10 @@ import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
 import kotlinx.android.synthetic.main.activity_scan_qrcode.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 private const val CAMERA_REQUEST_CODE = 101
 
@@ -30,12 +32,14 @@ class ScanQrcodeActivity : AppCompatActivity() {
         codeScanner()
 
         GlobalScope.launch {
-            val settingString = DataStoreManager.getStringVale(
+            val settingString = DataStoreManager.getStringValue(
                 this@ScanQrcodeActivity,
-                "testKey",
+                "settingsUrl",
                 default = "scanning something..."
             )
-            tv_textView.text = settingString
+            GlobalScope.launch(Dispatchers.Main) {
+                setting_textView.text = settingString
+            }
         }
     }
 
@@ -52,11 +56,19 @@ class ScanQrcodeActivity : AppCompatActivity() {
             isFlashEnabled = false
 
             decodeCallback = DecodeCallback {
+                val settings = JSONObject(it.text)
                 runOnUiThread {
-                    tv_textView.text = it.text
+                    setting_textView.text = it.text
                 }
+
+                if (settings.has("url")) {
+                    GlobalScope.launch(Dispatchers.Main) {
+                        url_textView.text = settings.getString("url")
+                    }
+                }
+
                 GlobalScope.launch {
-                    DataStoreManager.setValue(this@ScanQrcodeActivity, "testKey", it.text)
+                    DataStoreManager.setValue(this@ScanQrcodeActivity, "settingsUrl", it.text)
                 }
             }
 

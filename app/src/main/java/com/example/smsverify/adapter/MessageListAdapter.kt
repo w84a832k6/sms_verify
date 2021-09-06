@@ -22,7 +22,7 @@ class MessageListAdapter: ListAdapter<Message, MessageListAdapter.MessageViewHol
     }
 
     class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val messageItemView: TextView = itemView.findViewById(R.id.textView)
+        private val messageItemView: TextView = itemView.findViewById(R.id.message_textView)
 
         fun bind(text: String?) {
             messageItemView.text = text
