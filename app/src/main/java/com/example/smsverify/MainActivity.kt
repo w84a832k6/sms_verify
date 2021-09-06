@@ -11,23 +11,24 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.android.synthetic.main.recyclerview_item.*
+import com.example.smsverify.databinding.ActivityMainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
 private const val SMS_REQUEST_CODE = 101
 private const val PHONE_NUMBER_REQUEST_CODE = 102
+private lateinit var binding: ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         setupPermission()
 
-        resetNumber_button.setOnClickListener {
+        binding.resetNumberButton.setOnClickListener {
             setPhoneNumber()
         }
     }
@@ -38,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         GlobalScope.launch {
             val phoneNumber = DataStoreManager.getStringValue(this@MainActivity, "phoneNumber")
             GlobalScope.launch(Dispatchers.Main) {
-                phoneNumber_textView.text = phoneNumber
+                binding.phoneNumberTextView.text = phoneNumber
             }
         }
     }
@@ -82,7 +83,7 @@ class MainActivity : AppCompatActivity() {
             GlobalScope.launch {
                 DataStoreManager.setValue(this@MainActivity, "phoneNumber", phoneNumber)
             }
-            phoneNumber_textView.text = phoneNumber
+            binding.phoneNumberTextView.text = phoneNumber
         }
     }
 

@@ -12,7 +12,7 @@ import com.budiyev.android.codescanner.CodeScanner
 import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
-import kotlinx.android.synthetic.main.activity_scan_qrcode.*
+import com.example.smsverify.databinding.ActivityScanQrcodeBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -23,10 +23,12 @@ private const val CAMERA_REQUEST_CODE = 101
 class ScanQrcodeActivity : AppCompatActivity() {
 
     private lateinit var codeScanner: CodeScanner
+    private lateinit var binding: ActivityScanQrcodeBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_scan_qrcode)
+        binding = ActivityScanQrcodeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         setupPermission()
         codeScanner()
@@ -38,13 +40,13 @@ class ScanQrcodeActivity : AppCompatActivity() {
                 default = "scanning something..."
             )
             GlobalScope.launch(Dispatchers.Main) {
-                setting_textView.text = settingString
+                binding.settingTextView.text = settingString
             }
         }
     }
 
     private fun codeScanner() {
-        codeScanner = CodeScanner(this, scanner_view)
+        codeScanner = CodeScanner(this, binding.scannerView)
 
         codeScanner.apply {
             camera = CodeScanner.CAMERA_BACK
@@ -58,12 +60,12 @@ class ScanQrcodeActivity : AppCompatActivity() {
             decodeCallback = DecodeCallback {
                 val settings = JSONObject(it.text)
                 runOnUiThread {
-                    setting_textView.text = it.text
+                    binding.settingTextView.text = it.text
                 }
 
-                if (settings.has("url")) {
+                if (settings.has("to_url")) {
                     GlobalScope.launch(Dispatchers.Main) {
-                        url_textView.text = settings.getString("url")
+                        binding.urlTextView.text = settings.getString("to_url")
                     }
                 }
 
@@ -79,7 +81,7 @@ class ScanQrcodeActivity : AppCompatActivity() {
             }
         }
 
-        scanner_view.setOnClickListener {
+        binding.scannerView.setOnClickListener {
             codeScanner.startPreview()
         }
     }

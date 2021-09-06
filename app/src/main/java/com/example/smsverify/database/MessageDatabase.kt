@@ -19,9 +19,9 @@ abstract class MessageDatabase : RoomDatabase() {
             INSTANCE?.let { database ->
                 {
                     scope.launch {
-                        var messageDao = database.messageDao()
+                        val messageDao = database.messageDao()
 
-                        var message = Message("test", "test")
+                        val message = Message("test", "test")
                         messageDao.insertAll(message)
                     }
                 }
