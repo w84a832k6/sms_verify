@@ -10,4 +10,12 @@ class MessageRepository(private val MessageDao: MessageDao) {
     fun insertAll(vararg message: Message) {
         MessageDao.insertAll(*message)
     }
+
+    fun insert(message: Message) {
+        MessageDao.insert(message)
+    }
+
+    fun updateStatus(id: Long, status: Boolean) {
+        MessageDao.updateStatus(id, status)
+    }
 }

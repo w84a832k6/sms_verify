@@ -11,6 +11,16 @@ import kotlinx.coroutines.flow.map
 val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 object DataStoreManager {
+    enum class DataKey (private val describe: String, private val key: String) {
+        PHONENUMBER("電話號碼", "phoneNumber"),
+        SETTINGSTRING("設定字串", "settingString"),
+        TOURL("伺服器網址", "toUrl"),
+        BANKSLIST("銀行設定列表", "banksList");
+
+        fun getKey():String {
+            return this.key
+        }
+    }
     suspend fun setValue(context: Context, key: String, value: String) {
         val wrappedKey = stringPreferencesKey(key)
         context.settingsDataStore.edit {

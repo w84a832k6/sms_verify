@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 
 private const val SMS_REQUEST_CODE = 101
 private const val PHONE_NUMBER_REQUEST_CODE = 102
+private const val INTERNET_REQUEST_CODE = 104
 private lateinit var binding: ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
@@ -31,13 +32,19 @@ class MainActivity : AppCompatActivity() {
         binding.resetNumberButton.setOnClickListener {
             setPhoneNumber()
         }
+        binding.appVersionTextView.text = BuildConfig.VERSION_NAME
+        binding.connectStatusTextView.text = getString(R.string.connect_offline)
+        binding.connectStatusTextView.setTextColor(ContextCompat.getColor(this, R.color.red))
     }
 
     override fun onStart() {
         super.onStart()
 
         GlobalScope.launch {
-            val phoneNumber = DataStoreManager.getStringValue(this@MainActivity, "phoneNumber")
+            val phoneNumber = DataStoreManager.getStringValue(
+                this@MainActivity,
+                DataStoreManager.DataKey.PHONENUMBER.getKey()
+            )
             GlobalScope.launch(Dispatchers.Main) {
                 binding.phoneNumberTextView.text = phoneNumber
             }
@@ -67,44 +74,66 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setPhoneNumber() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                android.Manifest.permission.READ_PHONE_NUMBERS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(android.Manifest.permission.READ_PHONE_NUMBERS),
-                PHONE_NUMBER_REQUEST_CODE
-            )
-        } else {
-            val tMgr = this.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            val phoneNumber = tMgr.line1Number
-            GlobalScope.launch {
-                DataStoreManager.setValue(this@MainActivity, "phoneNumber", phoneNumber)
+        when {
+            (checkPermission(android.Manifest.permission.READ_PHONE_NUMBERS)) -> {
+                makeRequest(android.Manifest.permission.READ_PHONE_NUMBERS)
             }
-            binding.phoneNumberTextView.text = phoneNumber
+            else -> {
+                val tMgr = this.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+                val phoneNumber = tMgr.line1Number
+                GlobalScope.launch {
+                    DataStoreManager.setValue(
+                        this@MainActivity,
+                        DataStoreManager.DataKey.PHONENUMBER.getKey(),
+                        phoneNumber
+                    )
+                }
+                binding.phoneNumberTextView.text = phoneNumber
+            }
         }
     }
 
     private fun setupPermission() {
-        val readPermission =
-            ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_SMS)
-        if (readPermission != PackageManager.PERMISSION_GRANTED) {
-            makeRequest()
+        if (checkPermission(android.Manifest.permission.READ_SMS)) {
+            makeRequest(android.Manifest.permission.READ_SMS)
+        }
+        if (checkPermission(android.Manifest.permission.READ_PHONE_NUMBERS)) {
+            makeRequest(android.Manifest.permission.READ_PHONE_NUMBERS)
+        }
+        if (checkPermission(android.Manifest.permission.INTERNET)) {
+            makeRequest(android.Manifest.permission.INTERNET)
         }
     }
 
-    private fun makeRequest() {
-        ActivityCompat.requestPermissions(
+    private fun checkPermission(permission: String): Boolean {
+        return ContextCompat.checkSelfPermission(
             this,
-            arrayOf(
-                android.Manifest.permission.READ_SMS,
-                android.Manifest.permission.RECEIVE_SMS,
-                android.Manifest.permission.READ_PHONE_NUMBERS
-            ),
-            SMS_REQUEST_CODE
-        )
+            permission
+        ) != PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun makeRequest(permission: String) {
+        when (permission) {
+            android.Manifest.permission.READ_SMS -> {
+                ActivityCompat.requestPermissions(this, arrayOf(permission), SMS_REQUEST_CODE)
+            }
+            android.Manifest.permission.RECEIVE_SMS -> {
+                ActivityCompat.requestPermissions(this, arrayOf(permission), SMS_REQUEST_CODE)
+            }
+            android.Manifest.permission.READ_PHONE_NUMBERS -> {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(permission),
+                    PHONE_NUMBER_REQUEST_CODE
+                )
+            }
+            android.Manifest.permission.INTERNET -> {
+                ActivityCompat.requestPermissions(this, arrayOf(permission), INTERNET_REQUEST_CODE)
+            }
+            android.Manifest.permission.INTERACT_ACROSS_PROFILES -> {
+                ActivityCompat.requestPermissions(this, arrayOf(permission), INTERNET_REQUEST_CODE)
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(
@@ -119,6 +148,24 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(
                         this,
                         "You need the sms permission to be able to use this app!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            PHONE_NUMBER_REQUEST_CODE -> {
+                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(
+                        this,
+                        "You need the phone number permission to be able to use this app!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            INTERNET_REQUEST_CODE -> {
+                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(
+                        this,
+                        "You need the internet permission to be able to use this app!",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

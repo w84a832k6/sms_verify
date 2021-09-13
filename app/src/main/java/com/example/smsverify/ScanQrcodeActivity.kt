@@ -13,9 +13,9 @@ import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
 import com.example.smsverify.databinding.ActivityScanQrcodeBinding
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.json.JSONException
 import org.json.JSONObject
 
 private const val CAMERA_REQUEST_CODE = 101
@@ -33,16 +33,7 @@ class ScanQrcodeActivity : AppCompatActivity() {
         setupPermission()
         codeScanner()
 
-        GlobalScope.launch {
-            val settingString = DataStoreManager.getStringValue(
-                this@ScanQrcodeActivity,
-                "settingsUrl",
-                default = "scanning something..."
-            )
-            GlobalScope.launch(Dispatchers.Main) {
-                binding.settingTextView.text = settingString
-            }
-        }
+        getSettings()
     }
 
     private fun codeScanner() {
@@ -58,19 +49,8 @@ class ScanQrcodeActivity : AppCompatActivity() {
             isFlashEnabled = false
 
             decodeCallback = DecodeCallback {
-                val settings = JSONObject(it.text)
-                runOnUiThread {
-                    binding.settingTextView.text = it.text
-                }
-
-                if (settings.has("to_url")) {
-                    GlobalScope.launch(Dispatchers.Main) {
-                        binding.urlTextView.text = settings.getString("to_url")
-                    }
-                }
-
-                GlobalScope.launch {
-                    DataStoreManager.setValue(this@ScanQrcodeActivity, "settingsUrl", it.text)
+                if (it.text.isNotEmpty()) {
+                    setSettings(it.text)
                 }
             }
 
@@ -113,6 +93,70 @@ class ScanQrcodeActivity : AppCompatActivity() {
             arrayOf(android.Manifest.permission.CAMERA),
             CAMERA_REQUEST_CODE
         )
+    }
+
+    private fun setSettings(settingString: String) {
+        try {
+            val settings = JSONObject(settingString)
+            GlobalScope.launch {
+                DataStoreManager.setValue(
+                    this@ScanQrcodeActivity,
+                    DataStoreManager.DataKey.SETTINGSTRING.getKey(),
+                    settingString
+                )
+                runOnUiThread {
+                    binding.settingTextView.text = settingString
+                }
+            }
+
+            if (settings.has("to_url")) {
+                val toUrl = settings.getString("to_url")
+                GlobalScope.launch {
+                    DataStoreManager.setValue(
+                        this@ScanQrcodeActivity,
+                        DataStoreManager.DataKey.TOURL.getKey(),
+                        toUrl
+                    )
+                    runOnUiThread {
+                        binding.urlTextView.text = toUrl
+                    }
+                }
+            }
+
+            if (settings.has("banks")) {
+                val banks = settings.getString("banks")
+                GlobalScope.launch {
+                    DataStoreManager.setValue(
+                        this@ScanQrcodeActivity,
+                        DataStoreManager.DataKey.BANKSLIST.getKey(),
+                        banks
+                    )
+                }
+            }
+        } catch (ex: JSONException) {
+            runOnUiThread {
+                Toast.makeText(this, "json格式解析失敗", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun getSettings() {
+        GlobalScope.launch {
+            val settingString = DataStoreManager.getStringValue(
+                this@ScanQrcodeActivity,
+                DataStoreManager.DataKey.SETTINGSTRING.getKey(),
+                default = "scanning something..."
+            )
+            val url = DataStoreManager.getStringValue(
+                this@ScanQrcodeActivity,
+                DataStoreManager.DataKey.TOURL.getKey()
+            )
+
+            runOnUiThread {
+                binding.settingTextView.text = settingString
+                binding.urlTextView.text = url
+            }
+        }
     }
 
     override fun onRequestPermissionsResult(
