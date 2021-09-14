@@ -4,18 +4,18 @@ import com.example.smsverify.database.Message
 import com.example.smsverify.database.MessageDao
 import kotlinx.coroutines.flow.Flow
 
-class MessageRepository(private val MessageDao: MessageDao) {
-    val allMessage: Flow<List<Message>> = MessageDao.getAlphabetizedWords()
+class MessageRepository(private val messageDao: MessageDao) {
+    val allMessage: Flow<List<Message>> = messageDao.getAlphabetizedWords()
 
     fun insertAll(vararg message: Message) {
-        MessageDao.insertAll(*message)
+        messageDao.insertAll(*message)
     }
 
     fun insert(message: Message) {
-        MessageDao.insert(message)
+        messageDao.insert(message)
     }
 
     fun updateStatus(id: Long, status: Boolean) {
-        MessageDao.updateStatus(id, status)
+        messageDao.updateStatus(id, status)
     }
 }

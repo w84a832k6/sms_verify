@@ -97,6 +97,9 @@ class MainActivity : AppCompatActivity() {
         if (checkPermission(android.Manifest.permission.READ_SMS)) {
             makeRequest(android.Manifest.permission.READ_SMS)
         }
+        if (checkPermission(android.Manifest.permission.RECEIVE_SMS)) {
+            makeRequest(android.Manifest.permission.RECEIVE_SMS)
+        }
         if (checkPermission(android.Manifest.permission.READ_PHONE_NUMBERS)) {
             makeRequest(android.Manifest.permission.READ_PHONE_NUMBERS)
         }

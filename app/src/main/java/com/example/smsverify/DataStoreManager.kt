@@ -14,9 +14,7 @@ object DataStoreManager {
     enum class DataKey (private val describe: String, private val key: String) {
         PHONENUMBER("電話號碼", "phoneNumber"),
         SETTINGSTRING("設定字串", "settingString"),
-        TOURL("伺服器網址", "toUrl"),
-        BANKSLIST("銀行設定列表", "banksList");
-
+        TOURL("伺服器網址", "toUrl");
         fun getKey():String {
             return this.key
         }

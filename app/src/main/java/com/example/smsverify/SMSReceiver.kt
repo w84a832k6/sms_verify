@@ -6,11 +6,15 @@ import android.content.Intent
 import android.telephony.SmsMessage
 import android.util.Log
 import android.widget.Toast
-import com.example.smsverify.database.Message
-import com.example.smsverify.database.MessageDao
-import com.example.smsverify.database.MessageDatabase
+import com.eclipsesource.json.Json
+import com.eclipsesource.json.JsonObject
+import com.example.smsverify.database.*
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import ninja.sakib.jsonq.JSONQ
+import ninja.sakib.jsonq.ext.contains
+import ninja.sakib.jsonq.ext.whereEq
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
@@ -28,17 +32,28 @@ class SMSReceiver : BroadcastReceiver() {
             Toast.makeText(context, "from:$fromNumber\nbody : $body", Toast.LENGTH_SHORT).show()
 
             GlobalScope.launch {
-                //存入sqlite
-                val messageDao = MessageDatabase.getDatabase(context, this).messageDao()
-                val rawId = messageDao.insert(Message(fromNumber.toString(), body))
+                val bankDao = BankDatabase.getDatabase(context, this).bankDao()
+                val fromBank: Bank
+                if (!fromNumber.isNullOrEmpty()) {
+                    fromBank = bankDao.getBankByFrom(fromNumber)
 
-                var requestData = JSONObject()
-                requestData.put("from_sms", fromNumber)
-                requestData.put("content_sms", body)
-                requestData.put("phone_number", DataStoreManager.getStringValue(context, DataStoreManager.DataKey.PHONENUMBER.getKey()))
+                    fromBank?.let {
+                        val messageDao = MessageDatabase.getDatabase(context, this).messageDao()
+                        val rawId = messageDao.insert(Message(fromNumber.toString(), body))
 
-                //發送request
-                sendRequest(context, requestData.toString(), rawId)
+                        var requestData = JSONObject()
+                        requestData.put("from_sms", JSONObject().put(fromBank.slug, fromBank.from))
+                        requestData.put("content_sms", body)
+                        requestData.put(
+                            "phone_number",
+                            DataStoreManager.getStringValue(
+                                context,
+                                DataStoreManager.DataKey.PHONENUMBER.getKey()
+                            )
+                        )
+                        sendRequest(context, requestData.toString(), rawId)
+                    }
+                }
             }
         }
     }
@@ -46,7 +61,8 @@ class SMSReceiver : BroadcastReceiver() {
     private suspend fun sendRequest(context: Context, requestData: String, messageId: Long) {
         val okHttpClient = OkHttpClient()
 
-        val requestUrl = DataStoreManager.getStringValue(context, DataStoreManager.DataKey.TOURL.getKey())
+        val requestUrl =
+            DataStoreManager.getStringValue(context, DataStoreManager.DataKey.TOURL.getKey())
 
         val postFormBody =
             RequestBody.create("application/json; charset=utf-8".toMediaType(), requestData)

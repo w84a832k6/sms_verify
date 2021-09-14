@@ -12,9 +12,14 @@ import com.budiyev.android.codescanner.CodeScanner
 import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
+import com.eclipsesource.json.Json
+import com.example.smsverify.database.Bank
+import com.example.smsverify.database.BankDao
+import com.example.smsverify.database.BankDatabase
 import com.example.smsverify.databinding.ActivityScanQrcodeBinding
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import ninja.sakib.jsonq.JSONQ
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -124,13 +129,24 @@ class ScanQrcodeActivity : AppCompatActivity() {
             }
 
             if (settings.has("banks")) {
-                val banks = settings.getString("banks")
+                val setting = JSONQ(Json.parse(settingString).asObject())
+                val banks = setting.from("banks")
+                var bankData = mutableListOf<Bank>()
+                banks.forEach {
+                    val bankObject = it.asObject()
+                    bankObject.get("from").asArray().forEach { fromNumber ->
+                        bankData.add(
+                            Bank(
+                                bankObject.getString("slug", ""),
+                                bankObject.getString("name", ""),
+                                fromNumber.asString()
+                            )
+                        )
+                    }
+                }
                 GlobalScope.launch {
-                    DataStoreManager.setValue(
-                        this@ScanQrcodeActivity,
-                        DataStoreManager.DataKey.BANKSLIST.getKey(),
-                        banks
-                    )
+                    val bankDao = BankDatabase.getDatabase(this@ScanQrcodeActivity, this).bankDao()
+                    bankDao.insertAll(bankData)
                 }
             }
         } catch (ex: JSONException) {
