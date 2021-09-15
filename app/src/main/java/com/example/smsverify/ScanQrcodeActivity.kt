@@ -129,6 +129,7 @@ class ScanQrcodeActivity : AppCompatActivity() {
             }
 
             if (settings.has("banks")) {
+
                 val setting = JSONQ(Json.parse(settingString).asObject())
                 val banks = setting.from("banks")
                 var bankData = mutableListOf<Bank>()
@@ -146,6 +147,7 @@ class ScanQrcodeActivity : AppCompatActivity() {
                 }
                 GlobalScope.launch {
                     val bankDao = BankDatabase.getDatabase(this@ScanQrcodeActivity, this).bankDao()
+                    bankDao.deleteTable()
                     bankDao.insertAll(bankData)
                 }
             }

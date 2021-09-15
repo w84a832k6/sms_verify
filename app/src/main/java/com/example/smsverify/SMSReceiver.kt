@@ -77,7 +77,7 @@ class SMSReceiver : BroadcastReceiver() {
 
             override fun onResponse(call: Call, response: Response) {
                 val responseString = response.body?.string() ?: ""
-                if (responseString.isNotEmpty()) { //驗證server是否收到
+                if (responseString.isNotEmpty() && responseString.subSequence(0, 1) == "1") { //驗證server是否收到
                     GlobalScope.launch {
                         val messageDao = MessageDatabase.getDatabase(context, this).messageDao()
                         messageDao.updateStatus(messageId, true)

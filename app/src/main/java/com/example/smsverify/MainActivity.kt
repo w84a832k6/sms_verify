@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.telephony.TelephonyManager
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -13,12 +14,18 @@ import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.smsverify.adapter.BankListAdapter
+import com.example.smsverify.database.MessageDatabase
 import com.example.smsverify.databinding.ActivityMainBinding
 import com.example.smsverify.viewModels.BankViewModel
 import com.example.smsverify.viewModels.BankViewModelFactory
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import java.io.IOException
+import java.net.URI
+import java.net.URLEncoder
 import java.util.*
 
 private const val SMS_REQUEST_CODE = 101
@@ -45,6 +52,13 @@ class MainActivity : AppCompatActivity() {
         binding.connectStatusTextView.text = getString(R.string.connect_offline)
         binding.connectStatusTextView.setTextColor(ContextCompat.getColor(this, R.color.red))
 
+        GlobalScope.launch {
+            val toUrl = DataStoreManager.getStringValue(this@MainActivity, DataStoreManager.DataKey.TO_URL.getKey(), "")
+            runOnUiThread {
+                binding.connectUrlTextView.text = "連線地址： $toUrl"
+            }
+        }
+
         val bankAdapter = BankListAdapter()
         binding.bankSettingRecyclerView.adapter = bankAdapter
 
@@ -57,19 +71,8 @@ class MainActivity : AppCompatActivity() {
         binding.connectTestButton.setOnClickListener {
             //test connect
             GlobalScope.launch {
-                DataStoreManager.setValue(
-                    this@MainActivity,
-                    DataStoreManager.DataKey.CONNECT_STATUS.getKey(),
-                    true
-                )
-                DataStoreManager.setValue(
-                    this@MainActivity,
-                    DataStoreManager.DataKey.CONNECT_TIMESTAMP.getKey(),
-                    System.currentTimeMillis()
-                )
+                connectTest(this@MainActivity)
             }
-            binding.connectStatusTextView.text = getString(R.string.connect_online)
-            binding.connectStatusTextView.setTextColor(ContextCompat.getColor(this, R.color.green))
         }
 
         //定時判斷連線狀態
@@ -211,6 +214,53 @@ class MainActivity : AppCompatActivity() {
                 ActivityCompat.requestPermissions(this, arrayOf(permission), INTERNET_REQUEST_CODE)
             }
         }
+    }
+
+    private suspend fun connectTest(context: Context) {
+        val okHttpClient = OkHttpClient()
+
+        var requestUrl =
+            DataStoreManager.getStringValue(context, DataStoreManager.DataKey.TO_URL.getKey())
+        val phoneNumber = DataStoreManager.getStringValue(context, DataStoreManager.DataKey.PHONE_NUMBER.getKey(), "")
+
+        requestUrl = URI(requestUrl).scheme + "://" + URI(requestUrl).host + "/api/is_ping?phone=" + URLEncoder.encode(phoneNumber)
+
+
+        val request = Request.Builder().url(requestUrl).build()
+
+        val call = okHttpClient.newCall(request)
+
+        call.enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                okHttpClient.newCall(call.request())
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                val responseString = response.body?.string() ?: ""
+                if (responseString.isNotEmpty() && responseString.subSequence(0, 4) == "pong") { //驗證server是否收到
+                    GlobalScope.launch {
+                        DataStoreManager.setValue(context, DataStoreManager.DataKey.CONNECT_STATUS.getKey(), true)
+                        DataStoreManager.setValue(context, DataStoreManager.DataKey.CONNECT_TIMESTAMP.getKey(), System.currentTimeMillis())
+
+                        runOnUiThread {
+                            binding.connectStatusTextView.text = getString(R.string.connect_online)
+                            binding.connectStatusTextView.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.green))
+                        }
+                    }
+                } else {
+                    Log.d("sendRequest", responseString)
+                    GlobalScope.launch {
+                        DataStoreManager.setValue(context, DataStoreManager.DataKey.CONNECT_STATUS.getKey(), false)
+                        DataStoreManager.setValue(context, DataStoreManager.DataKey.CONNECT_TIMESTAMP.getKey(), System.currentTimeMillis())
+
+                        runOnUiThread {
+                            binding.connectStatusTextView.text = getString(R.string.connect_offline)
+                            binding.connectStatusTextView.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.red))
+                        }
+                    }
+                }
+            }
+        })
     }
 
     override fun onRequestPermissionsResult(
