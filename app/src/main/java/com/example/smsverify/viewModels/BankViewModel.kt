@@ -6,7 +6,7 @@ import com.example.smsverify.repositories.BankRepository
 import kotlinx.coroutines.launch
 
 class BankViewModel (private val repository: BankRepository): ViewModel() {
-    val getAll: LiveData<List<Bank>> = repository.getAll.asLiveData()
+    val allBank: LiveData<List<Bank>> = repository.getAll.asLiveData()
 
     fun insertAll(banks: List<Bank>) = viewModelScope.launch {
         repository.insertAll(banks)

@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface BankDao {
-    @Query("SELECT * FROM bank")
-    fun getAll(): Flow<List<Bank>>
+    @Query("SELECT * FROM bank GROUP BY name")
+    fun getAllBankName(): Flow<List<Bank>>
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     fun insertAll(banks: List<Bank>)

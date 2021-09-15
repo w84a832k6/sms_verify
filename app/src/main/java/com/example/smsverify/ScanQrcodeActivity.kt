@@ -106,7 +106,7 @@ class ScanQrcodeActivity : AppCompatActivity() {
             GlobalScope.launch {
                 DataStoreManager.setValue(
                     this@ScanQrcodeActivity,
-                    DataStoreManager.DataKey.SETTINGSTRING.getKey(),
+                    DataStoreManager.DataKey.SETTING_STRING.getKey(),
                     settingString
                 )
                 runOnUiThread {
@@ -119,7 +119,7 @@ class ScanQrcodeActivity : AppCompatActivity() {
                 GlobalScope.launch {
                     DataStoreManager.setValue(
                         this@ScanQrcodeActivity,
-                        DataStoreManager.DataKey.TOURL.getKey(),
+                        DataStoreManager.DataKey.TO_URL.getKey(),
                         toUrl
                     )
                     runOnUiThread {
@@ -160,12 +160,12 @@ class ScanQrcodeActivity : AppCompatActivity() {
         GlobalScope.launch {
             val settingString = DataStoreManager.getStringValue(
                 this@ScanQrcodeActivity,
-                DataStoreManager.DataKey.SETTINGSTRING.getKey(),
+                DataStoreManager.DataKey.SETTING_STRING.getKey(),
                 default = "scanning something..."
             )
             val url = DataStoreManager.getStringValue(
                 this@ScanQrcodeActivity,
-                DataStoreManager.DataKey.TOURL.getKey()
+                DataStoreManager.DataKey.TO_URL.getKey()
             )
 
             runOnUiThread {

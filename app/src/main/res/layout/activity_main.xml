@@ -32,13 +32,17 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/setting_recyclerView"
-        android:layout_width="400dp"
-        android:layout_height="200dp"
+        android:id="@+id/bankSetting_recyclerView"
+        android:layout_width="396dp"
+        android:layout_height="190dp"
         android:layout_marginTop="40dp"
+        android:padding="16dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/phoneNumber_textView" />
+        app:layout_constraintTop_toBottomOf="@+id/phoneNumber_textView"
+        app:spanCount="3"
+        tools:listitem="@layout/bank_recyclerview_item" />
 
     <TextView
         android:id="@+id/appVersionLabel_textView"
@@ -48,7 +52,7 @@
         android:layout_marginEnd="100dp"
         android:text="@string/version"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/setting_recyclerView" />
+        app:layout_constraintTop_toBottomOf="@+id/bankSetting_recyclerView" />
 
     <TextView
         android:id="@+id/appVersion_textView"
@@ -60,7 +64,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.625"
         app:layout_constraintStart_toEndOf="@+id/appVersionLabel_textView"
-        app:layout_constraintTop_toBottomOf="@+id/setting_recyclerView" />
+        app:layout_constraintTop_toBottomOf="@+id/bankSetting_recyclerView" />
 
     <TextView
         android:id="@+id/connectStatus_textView"
@@ -68,7 +72,19 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="50dp"
         android:layout_marginTop="50dp"
+        android:text="@string/connect_offline"
+        android:textColor="@color/red"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/setting_recyclerView" />
+        app:layout_constraintTop_toBottomOf="@+id/bankSetting_recyclerView" />
+
+    <Button
+        android:id="@+id/connectTest_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="84dp"
+        android:layout_marginBottom="84dp"
+        android:text="@string/connect_test"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/resetNumber_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

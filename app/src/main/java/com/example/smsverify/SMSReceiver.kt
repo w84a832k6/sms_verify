@@ -48,7 +48,7 @@ class SMSReceiver : BroadcastReceiver() {
                             "phone_number",
                             DataStoreManager.getStringValue(
                                 context,
-                                DataStoreManager.DataKey.PHONENUMBER.getKey()
+                                DataStoreManager.DataKey.PHONE_NUMBER.getKey()
                             )
                         )
                         sendRequest(context, requestData.toString(), rawId)
@@ -62,7 +62,7 @@ class SMSReceiver : BroadcastReceiver() {
         val okHttpClient = OkHttpClient()
 
         val requestUrl =
-            DataStoreManager.getStringValue(context, DataStoreManager.DataKey.TOURL.getKey())
+            DataStoreManager.getStringValue(context, DataStoreManager.DataKey.TO_URL.getKey())
 
         val postFormBody =
             RequestBody.create("application/json; charset=utf-8".toMediaType(), requestData)
@@ -81,6 +81,9 @@ class SMSReceiver : BroadcastReceiver() {
                     GlobalScope.launch {
                         val messageDao = MessageDatabase.getDatabase(context, this).messageDao()
                         messageDao.updateStatus(messageId, true)
+
+                        DataStoreManager.setValue(context, DataStoreManager.DataKey.CONNECT_STATUS.getKey(), true)
+                        DataStoreManager.setValue(context, DataStoreManager.DataKey.CONNECT_TIMESTAMP.getKey(), System.currentTimeMillis())
                     }
                 } else {
                     Log.d("sendRequest", responseString)

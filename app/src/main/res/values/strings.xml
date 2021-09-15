@@ -5,4 +5,5 @@
     <string name="version">版本號</string>
     <string name="connect_offline">離線</string>
     <string name="connect_online">連線</string>
+    <string name="connect_test">連線測試</string>
 </resources>

@@ -12,9 +12,11 @@ val Context.settingsDataStore: DataStore<Preferences> by preferencesDataStore(na
 
 object DataStoreManager {
     enum class DataKey (private val describe: String, private val key: String) {
-        PHONENUMBER("電話號碼", "phoneNumber"),
-        SETTINGSTRING("設定字串", "settingString"),
-        TOURL("伺服器網址", "toUrl");
+        PHONE_NUMBER("電話號碼", "phoneNumber"),
+        SETTING_STRING("設定字串", "settingString"),
+        TO_URL("伺服器網址", "toUrl"),
+        CONNECT_STATUS("連線狀態", "connectStatus"),
+        CONNECT_TIMESTAMP("連線時間", "connectTimestamp");
         fun getKey():String {
             return this.key
         }
