@@ -11,5 +11,5 @@ data class Message(
     @ColumnInfo(name = "status") var status: Boolean = false
 ) {
     @PrimaryKey(autoGenerate = true)
-    var id: Int = 0
+    var id: Long = 0
 }

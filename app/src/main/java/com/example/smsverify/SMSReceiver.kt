@@ -6,15 +6,9 @@ import android.content.Intent
 import android.telephony.SmsMessage
 import android.util.Log
 import android.widget.Toast
-import com.eclipsesource.json.Json
-import com.eclipsesource.json.JsonObject
 import com.example.smsverify.database.*
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import ninja.sakib.jsonq.JSONQ
-import ninja.sakib.jsonq.ext.contains
-import ninja.sakib.jsonq.ext.whereEq
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
@@ -41,7 +35,7 @@ class SMSReceiver : BroadcastReceiver() {
                         val messageDao = MessageDatabase.getDatabase(context, this).messageDao()
                         val rawId = messageDao.insert(Message(fromNumber.toString(), body))
 
-                        var requestData = JSONObject()
+                        val requestData = JSONObject()
                         requestData.put("from_sms", JSONObject().put(fromBank.slug, fromBank.from))
                         requestData.put("content_sms", body)
                         requestData.put(

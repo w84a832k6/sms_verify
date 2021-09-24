@@ -16,16 +16,6 @@ abstract class BankDatabase: RoomDatabase() {
         RoomDatabase.Callback() {
         override fun onCreate(db: SupportSQLiteDatabase) {
             super.onCreate(db)
-            INSTANCE?.let { database ->
-                {
-                    scope.launch {
-                        val bankDao = database.bankDao()
-
-                        val bank = Bank("test", "test")
-//                        bankDao.insertAll(bank)
-                    }
-                }
-            }
         }
     }
 

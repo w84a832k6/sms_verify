@@ -6,4 +6,10 @@
     <string name="connect_offline">離線</string>
     <string name="connect_online">連線</string>
     <string name="connect_test">連線測試</string>
+    <string name="connect_label">連線地址： %1$s</string>
+    <string name="confirm">確定</string>
+    <string name="cancel">取消</string>
+    <string name="alert_from">來源： %1$s</string>
+    <string name="alert_context">內容： %1$s</string>
+    <string name="alert_resend_title">是否重發簡訊</string>
 </resources>

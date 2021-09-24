@@ -13,19 +13,17 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.smsverify.adapter.BankListAdapter
-import com.example.smsverify.database.MessageDatabase
 import com.example.smsverify.databinding.ActivityMainBinding
 import com.example.smsverify.viewModels.BankViewModel
 import com.example.smsverify.viewModels.BankViewModelFactory
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaType
 import java.io.IOException
 import java.net.URI
 import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.*
 
 private const val SMS_REQUEST_CODE = 101
@@ -48,15 +46,24 @@ class MainActivity : AppCompatActivity() {
         binding.resetNumberButton.setOnClickListener {
             setPhoneNumber()
         }
+        binding.connectTestButton.setOnClickListener {
+            //test connect
+            lifecycleScope.launch {
+                connectTest(this@MainActivity)
+            }
+        }
+
         binding.appVersionTextView.text = BuildConfig.VERSION_NAME
         binding.connectStatusTextView.text = getString(R.string.connect_offline)
         binding.connectStatusTextView.setTextColor(ContextCompat.getColor(this, R.color.red))
 
-        GlobalScope.launch {
-            val toUrl = DataStoreManager.getStringValue(this@MainActivity, DataStoreManager.DataKey.TO_URL.getKey(), "")
-            runOnUiThread {
-                binding.connectUrlTextView.text = "連線地址： $toUrl"
-            }
+        lifecycleScope.launch {
+            val toUrl = DataStoreManager.getStringValue(
+                this@MainActivity,
+                DataStoreManager.DataKey.TO_URL.getKey(),
+                ""
+            )
+            binding.connectUrlTextView.text = getString(R.string.connect_label, toUrl)
         }
 
         val bankAdapter = BankListAdapter()
@@ -68,17 +75,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        binding.connectTestButton.setOnClickListener {
-            //test connect
-            GlobalScope.launch {
-                connectTest(this@MainActivity)
-            }
-        }
-
         //定時判斷連線狀態
         Timer().schedule(object : TimerTask() {
             override fun run() {
-                GlobalScope.launch {
+                lifecycleScope.launch {
                     val connectStatus = DataStoreManager.getBooleanValue(
                         this@MainActivity,
                         DataStoreManager.DataKey.CONNECT_STATUS.getKey(), false
@@ -117,14 +117,12 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        GlobalScope.launch {
+        lifecycleScope.launch {
             val phoneNumber = DataStoreManager.getStringValue(
                 this@MainActivity,
                 DataStoreManager.DataKey.PHONE_NUMBER.getKey()
             )
-            GlobalScope.launch(Dispatchers.Main) {
-                binding.phoneNumberTextView.text = phoneNumber
-            }
+            binding.phoneNumberTextView.text = phoneNumber
         }
     }
 
@@ -158,7 +156,7 @@ class MainActivity : AppCompatActivity() {
             else -> {
                 val tMgr = this.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
                 val phoneNumber = tMgr.line1Number
-                GlobalScope.launch {
+                lifecycleScope.launch {
                     DataStoreManager.setValue(
                         this@MainActivity,
                         DataStoreManager.DataKey.PHONE_NUMBER.getKey(),
@@ -221,10 +219,17 @@ class MainActivity : AppCompatActivity() {
 
         var requestUrl =
             DataStoreManager.getStringValue(context, DataStoreManager.DataKey.TO_URL.getKey())
-        val phoneNumber = DataStoreManager.getStringValue(context, DataStoreManager.DataKey.PHONE_NUMBER.getKey(), "")
+        val phoneNumber = URLEncoder.encode(
+            DataStoreManager.getStringValue(
+                context,
+                DataStoreManager.DataKey.PHONE_NUMBER.getKey(),
+                ""
+            ), StandardCharsets.UTF_8.toString()
+        )
 
-        requestUrl = URI(requestUrl).scheme + "://" + URI(requestUrl).host + "/api/is_ping?phone=" + URLEncoder.encode(phoneNumber)
-
+        val scheme = URI(requestUrl).scheme
+        val host = URI(requestUrl).host
+        requestUrl = "%s://%s/api/is_ping?phone=%s".format(scheme, host, phoneNumber)
 
         val request = Request.Builder().url(requestUrl).build()
 
@@ -237,25 +242,55 @@ class MainActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call, response: Response) {
                 val responseString = response.body?.string() ?: ""
-                if (responseString.isNotEmpty() && responseString.subSequence(0, 4) == "pong") { //驗證server是否收到
-                    GlobalScope.launch {
-                        DataStoreManager.setValue(context, DataStoreManager.DataKey.CONNECT_STATUS.getKey(), true)
-                        DataStoreManager.setValue(context, DataStoreManager.DataKey.CONNECT_TIMESTAMP.getKey(), System.currentTimeMillis())
+                if (responseString.isNotEmpty() && responseString.subSequence(
+                        0,
+                        4
+                    ) == "pong"
+                ) { //驗證server是否收到
+                    lifecycleScope.launch {
+                        DataStoreManager.setValue(
+                            context,
+                            DataStoreManager.DataKey.CONNECT_STATUS.getKey(),
+                            true
+                        )
+                        DataStoreManager.setValue(
+                            context,
+                            DataStoreManager.DataKey.CONNECT_TIMESTAMP.getKey(),
+                            System.currentTimeMillis()
+                        )
 
                         runOnUiThread {
                             binding.connectStatusTextView.text = getString(R.string.connect_online)
-                            binding.connectStatusTextView.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.green))
+                            binding.connectStatusTextView.setTextColor(
+                                ContextCompat.getColor(
+                                    this@MainActivity,
+                                    R.color.green
+                                )
+                            )
                         }
                     }
                 } else {
                     Log.d("sendRequest", responseString)
-                    GlobalScope.launch {
-                        DataStoreManager.setValue(context, DataStoreManager.DataKey.CONNECT_STATUS.getKey(), false)
-                        DataStoreManager.setValue(context, DataStoreManager.DataKey.CONNECT_TIMESTAMP.getKey(), System.currentTimeMillis())
+                    lifecycleScope.launch {
+                        DataStoreManager.setValue(
+                            context,
+                            DataStoreManager.DataKey.CONNECT_STATUS.getKey(),
+                            false
+                        )
+                        DataStoreManager.setValue(
+                            context,
+                            DataStoreManager.DataKey.CONNECT_TIMESTAMP.getKey(),
+                            System.currentTimeMillis()
+                        )
 
                         runOnUiThread {
                             binding.connectStatusTextView.text = getString(R.string.connect_offline)
-                            binding.connectStatusTextView.setTextColor(ContextCompat.getColor(this@MainActivity, R.color.red))
+                            binding.connectStatusTextView.setTextColor(
+                                ContextCompat.getColor(
+                                    this@MainActivity,
+                                    R.color.red
+                                )
+                            )
                         }
                     }
                 }
