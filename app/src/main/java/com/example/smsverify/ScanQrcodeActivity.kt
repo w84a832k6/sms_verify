@@ -14,7 +14,6 @@ import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
 import com.eclipsesource.json.Json
 import com.example.smsverify.database.Bank
-import com.example.smsverify.database.BankDao
 import com.example.smsverify.database.BankDatabase
 import com.example.smsverify.databinding.ActivityScanQrcodeBinding
 import kotlinx.coroutines.GlobalScope

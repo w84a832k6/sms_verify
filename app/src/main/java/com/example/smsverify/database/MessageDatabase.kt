@@ -4,11 +4,12 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-@Database(entities = [Message::class], version = 1)
+@Database(entities = [Message::class], version = 2)
 abstract class MessageDatabase : RoomDatabase() {
     abstract fun messageDao(): MessageDao
 
@@ -43,11 +44,17 @@ abstract class MessageDatabase : RoomDatabase() {
                     context.applicationContext,
                     MessageDatabase::class.java,
                     "message"
-                ).addCallback(MessageDatabaseCallback(scope)).build()
+                ).addMigrations(Migration1To2()).addCallback(MessageDatabaseCallback(scope)).build()
                 INSTANCE = instance
                 // return instance
                 instance
             }
+        }
+    }
+
+    class Migration1To2: Migration(1,2) {
+        override fun migrate(database: SupportSQLiteDatabase) {
+            database.execSQL("ALTER TABLE message ADD COLUMN timestamp INTEGER NOT NULL DEFAULT(0)")
         }
     }
 }

@@ -2,6 +2,7 @@ package com.example.smsverify.adapter
 
 import android.app.AlertDialog
 import android.content.Context
+import android.icu.text.SimpleDateFormat
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -22,6 +23,7 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import org.json.JSONObject
 import java.io.IOException
+import java.util.*
 
 class MessageListAdapter :
     ListAdapter<Message, MessageListAdapter.MessageViewHolder>(MessageComparator()) {
@@ -31,13 +33,17 @@ class MessageListAdapter :
 
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         val current = getItem(position)
-        holder.bind(current.id, current.from, current.context, current.status)
+        holder.bind(current.id, current.from, current.context, current.status, current.timestamp)
     }
 
     class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val messageItemView: TextView = itemView.findViewById(R.id.message_textView)
+        private val messageTimeView: TextView = itemView.findViewById(R.id.messageTime_textView)
 
-        fun bind(id: Long, from: String, text: String, status: Boolean) {
+        fun bind(id: Long, from: String, text: String, status: Boolean, timestamp: Long) {
+            val formatDate = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+            val time = Date(timestamp)
+            messageTimeView.text = formatDate.format(time);
             messageItemView.text = text
             if (status) {
                 messageItemView.setBackgroundColor(

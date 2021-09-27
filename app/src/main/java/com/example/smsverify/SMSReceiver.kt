@@ -33,7 +33,7 @@ class SMSReceiver : BroadcastReceiver() {
 
                     fromBank?.let {
                         val messageDao = MessageDatabase.getDatabase(context, this).messageDao()
-                        val rawId = messageDao.insert(Message(fromNumber.toString(), body))
+                        val rawId = messageDao.insert(Message(from = fromNumber.toString(), context = body, timestamp = System.currentTimeMillis()))
 
                         val requestData = JSONObject()
                         requestData.put("from_sms", JSONObject().put(fromBank.slug, fromBank.from))
